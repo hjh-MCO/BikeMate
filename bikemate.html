@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BikeMate — Tire Pressure Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0A0F14;
+    --panel:#121922;
+    --panel-2:#0E141B;
+    --border:#1D2830;
+    --border-soft:#161F27;
+    --text:#EAF2F6;
+    --text-muted:#7C8CA0;
+    --text-faint:#48586A;
+    --cyan:#22D3EE;
+    --teal:#2DD9A6;
+    --track:#1A2530;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--void);
+    background-image:
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+      radial-gradient(1100px 550px at 10% -10%, rgba(34,211,238,0.05), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(45,217,166,0.05), transparent 55%);
+    background-size:40px 40px, 40px 40px, auto, auto;
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:1140px;margin:0 auto;padding:26px 20px 60px;}
+
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;padding-bottom:20px;margin-bottom:22px;border-bottom:1px solid var(--border-soft);}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--teal));display:flex;align-items:center;justify-content:center;flex:none;}
+  .mark svg{width:20px;height:20px;stroke:#06141A;}
+  .wordmark{font-family:'Space Grotesk', sans-serif;font-size:19px;line-height:1;}
+  .wordmark .a{font-weight:500;color:var(--text);}
+  .wordmark .b{font-weight:700;color:var(--cyan);}
+  .tagline{font-family:'IBM Plex Mono', monospace;font-size:11px;color:var(--text-muted);margin-top:5px;letter-spacing:0.5px;}
+  .status{display:flex;align-items:center;gap:7px;font-family:'IBM Plex Mono', monospace;font-size:11px;letter-spacing:1.5px;color:var(--text-muted);}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+  /* Layout */
+  .grid{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start;}
+  @media (max-width:860px){.grid{grid-template-columns:1fr;}}
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
+
+  .panel-title{font-family:'Space Grotesk', sans-serif;font-size:14px;font-weight:600;letter-spacing:0.6px;color:var(--text);display:flex;align-items:center;gap:9px;margin-bottom:20px;text-transform:uppercase;}
+  .panel-title::before{content:"";width:3px;height:15px;border-radius:2px;background:linear-gradient(180deg,var(--cyan),var(--teal));}
+
+  .section{margin-bottom:24px;}
+  .section:last-child{margin-bottom:0;}
+  .section-label{font-family:'IBM Plex Mono', monospace;font-size:11px;letter-spacing:1.6px;color:var(--text-faint);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .section-label svg{width:13px;height:13px;stroke:var(--text-faint);flex:none;}
+  .section-label.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .section-label .val{font-family:'IBM Plex Mono', monospace;font-size:14px;color:var(--text);font-weight:600;letter-spacing:0;}
+
+  /* Discipline grid */
+  .disc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .disc-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px 10px;border-radius:10px;border:1px solid var(--border);background:var(--panel-2);color:var(--text-muted);cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
+  .disc-btn svg{width:20px;height:20px;stroke:var(--text-muted);transition:stroke .15s;}
+  .disc-btn span{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:500;}
+  .disc-btn:hover{border-color:var(--border);color:var(--text);}
+  .disc-btn:hover svg{stroke:var(--text);}
+  .disc-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(34,211,238,0.07);}
+  .disc-btn.active svg{stroke:var(--cyan);}
+
+  /* Tire type segmented */
+  .seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .seg3 button{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;padding:11px 6px;border-radius:9px;border:1px solid var(--border);background:var(--panel-2);color:var(--text-muted);cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
+  .seg3 button:hover{color:var(--text);}
+  .seg3 button.active{border-color:var(--cyan);color:var(--cyan);background:rgba(34,211,238,0.07);}
+  .helper-text{font-size:12px;color:var(--text-faint);margin-top:8px;line-height:1.5;}
+
+  /* Weight slider */
+  input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:var(--border);outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--cyan);border:3px solid var(--void);box-shadow:0 0 0 1px var(--cyan);cursor:pointer;margin-top:-6px;}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--cyan);border:3px solid var(--void);box-shadow:0 0 0 1px var(--cyan);cursor:pointer;}
+  .scale-ticks{display:flex;justify-content:space-between;font-family:'IBM Plex Mono', monospace;font-size:10px;color:var(--text-faint);margin-top:6px;}
+
+  /* Width chips + input */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+  .chip{font-family:'IBM Plex Mono', monospace;font-size:11px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--panel-2);color:var(--text-muted);cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
+  .chip:hover{border-color:var(--cyan);color:var(--text);}
+  .chip.active{border-color:var(--cyan);color:var(--cyan);background:rgba(34,211,238,0.09);}
+  .width-input-box{display:flex;align-items:baseline;gap:8px;background:var(--panel-2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;}
+  .width-input-box input{background:none;border:none;outline:none;color:var(--text);font-family:'IBM Plex Mono', monospace;font-size:18px;font-weight:600;width:100%;}
+  .width-input-box span{font-family:'IBM Plex Mono', monospace;font-size:12px;color:var(--text-muted);}
+
+  /* Surface list */
+  .surface-list{display:flex;flex-direction:column;gap:8px;}
+  .surface-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:9px;border:1px solid var(--border);background:var(--panel-2);cursor:pointer;transition:border-color .15s,background .15s;}
+  .surface-row:hover{border-color:var(--border);background:#141C25;}
+  .surface-row .t{font-size:13.5px;font-weight:600;color:var(--text);}
+  .surface-row .d{font-size:11.5px;color:var(--text-faint);margin-top:2px;}
+  .surface-row .chev{color:var(--cyan);opacity:0;font-size:14px;transition:opacity .15s;}
+  .surface-row.active{border-color:var(--cyan);background:rgba(34,211,238,0.06);}
+  .surface-row.active .t{color:var(--cyan);}
+  .surface-row.active .chev{opacity:1;}
+
+  /* Bike weight pill */
+  .bikeweight-row{display:flex;align-items:center;justify-content:space-between;}
+  .pill{font-family:'IBM Plex Mono', monospace;font-size:12px;font-weight:600;color:var(--text-muted);background:var(--panel-2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;cursor:pointer;transition:border-color .15s,color .15s;}
+  .pill:hover{border-color:var(--cyan);color:var(--text);}
+  .pill.manual{color:var(--cyan);border-color:var(--cyan);}
+  .pill input{background:none;border:none;outline:none;color:var(--cyan);font-family:'IBM Plex Mono', monospace;font-size:12px;font-weight:600;width:38px;text-align:right;}
+
+  button:focus-visible, input:focus-visible, .surface-row:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;}
+
+  /* Display panel */
+  .gauges{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+  @media (max-width:520px){.gauges{grid-template-columns:1fr;}}
+  .gauge-block{text-align:center;}
+  .ring{position:relative;width:100%;max-width:230px;aspect-ratio:1/1;margin:0 auto;}
+  .ring svg{width:100%;height:100%;overflow:visible;}
+  .ring circle.track{fill:none;stroke:var(--track);stroke-width:14;stroke-linecap:round;}
+  .ring circle.value{fill:none;stroke-width:14;stroke-linecap:round;transition:stroke-dasharray .7s ease;}
+  .ring-front circle.value{stroke:var(--cyan);filter:drop-shadow(0 0 8px rgba(34,211,238,0.55));}
+  .ring-rear circle.value{stroke:var(--teal);filter:drop-shadow(0 0 8px rgba(45,217,166,0.55));}
+  .ring line.needle{stroke-width:3;stroke-linecap:round;transition:transform .7s cubic-bezier(.34,1.4,.4,1);}
+  .ring-front line.needle{stroke:var(--cyan);}
+  .ring-rear line.needle{stroke:var(--teal);}
+  .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+  .ring-center .big{font-family:'IBM Plex Mono', monospace;font-size:clamp(28px,7vw,38px);font-weight:700;color:var(--text);line-height:1;}
+  .ring-center .unit{font-family:'IBM Plex Mono', monospace;font-size:10.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px;}
+  .ring-center .sub{font-family:'IBM Plex Mono', monospace;font-size:13px;color:var(--text-muted);margin-top:8px;}
+  .gauge-label{font-family:'IBM Plex Mono', monospace;font-size:11px;letter-spacing:2px;color:var(--text-faint);text-transform:uppercase;margin-top:12px;}
+
+  .info-strip{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .info-box{flex:1;min-width:140px;background:var(--panel-2);border:1px solid var(--border);border-radius:9px;padding:12px 14px;}
+  .info-box .k{font-family:'IBM Plex Mono', monospace;font-size:9.5px;letter-spacing:1.3px;color:var(--text-faint);text-transform:uppercase;margin-bottom:5px;}
+  .info-box .v{font-family:'IBM Plex Mono', monospace;font-size:14px;color:var(--text);font-weight:600;}
+
+  .footnote{display:flex;gap:9px;font-size:12px;line-height:1.6;color:var(--text-faint);border-top:1px solid var(--border-soft);padding-top:16px;}
+  .footnote svg{width:14px;height:14px;stroke:var(--text-faint);flex:none;margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/><path d="M12 17.5V14l-3-3 4-3 2 3h3"/></svg>
+      </div>
+      <div>
+        <div class="wordmark"><span class="a">Bike</span><span class="b">Mate</span></div>
+        <div class="tagline">Tire Pressure Engineer</div>
+      </div>
+    </div>
+    <div class="status"><span class="status-dot"></span>SYSTEM ONLINE</div>
+  </header>
+
+  <div class="grid">
+
+    <!-- PARAMETERS -->
+    <div class="panel">
+      <div class="panel-title">Parameters</div>
+
+      <div class="section">
+        <div class="section-label">Discipline</div>
+        <div class="disc-grid" id="disciplineGrid">
+          <button class="disc-btn" data-key="road"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/><path d="M12 17.5V14l-3-3 4-3 2 3h3"/></svg><span>Road</span></button>
+          <button class="disc-btn" data-key="gravel"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21c0-4 4-4 4-8s-4-4-4-8"/><path d="M17 21c0-4-4-4-4-8s4-4 4-8"/></svg><span>Gravel</span></button>
+          <button class="disc-btn" data-key="cyclocross"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V3"/><path d="M5 4h12l-2.5 3.5L17 11H5"/></svg><span>Cyclocross</span></button>
+          <button class="disc-btn" data-key="mtb"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-13 4 7 3-5 5 11H3z"/></svg><span>MTB</span></button>
+          <button class="disc-btn" data-key="triathlon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 13V9"/><path d="M9 3h6"/></svg><span>Triathlon</span></button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Tire Type</div>
+        <div class="seg3" id="tireTypeSeg">
+          <button data-key="clincher">Clincher</button>
+          <button data-key="tubeless">Tubeless</button>
+          <button data-key="tubular">Tubular</button>
+        </div>
+        <div class="helper-text" id="tireTypeHelper"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label row"><span>Rider Weight</span><span class="val" id="weightValue">75 kg</span></div>
+        <input type="range" id="weightSlider" min="40" max="120" step="1" value="75">
+        <div class="scale-ticks"><span>40</span><span>80</span><span>120</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Tire Width</div>
+        <div class="chips" id="widthChips"></div>
+        <div class="width-input-box">
+          <input type="number" id="widthInput" value="28">
+          <span>mm</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Surface Quality</div>
+        <div class="surface-list" id="surfaceList"></div>
+      </div>
+
+      <div class="section">
+        <div class="bikeweight-row">
+          <div class="section-label" style="margin:0;">Bike Weight</div>
+          <button class="pill" id="bikeWeightPill"></button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DISPLAY -->
+    <div class="panel">
+      <div class="panel-title">Recommended Pressure</div>
+
+      <div class="gauges">
+        <div class="gauge-block">
+          <div class="ring ring-front">
+            <svg viewBox="0 0 200 200">
+              <circle class="track" cx="100" cy="100" r="82" stroke-dasharray="386.42 515.22" transform="rotate(135 100 100)"/>
+              <circle class="value" id="arcFront" cx="100" cy="100" r="82" stroke-dasharray="0 515.22" transform="rotate(135 100 100)"/>
+              <line class="needle" id="needleFront" x1="100" y1="100" x2="100" y2="30" transform="rotate(225 100 100)"/>
+              <circle cx="100" cy="100" r="4" fill="#0A0F14" stroke="var(--cyan)" stroke-width="2"/>
+            </svg>
+            <div class="ring-center">
+              <div class="big" data-role="bar">—</div>
+              <div class="unit">BAR</div>
+              <div class="sub" data-role="psi">— PSI</div>
+            </div>
+          </div>
+          <div class="gauge-label">Front</div>
+        </div>
+
+        <div class="gauge-block">
+          <div class="ring ring-rear">
+            <svg viewBox="0 0 200 200">
+              <circle class="track" cx="100" cy="100" r="82" stroke-dasharray="386.42 515.22" transform="rotate(135 100 100)"/>
+              <circle class="value" id="arcRear" cx="100" cy="100" r="82" stroke-dasharray="0 515.22" transform="rotate(135 100 100)"/>
+              <line class="needle" id="needleRear" x1="100" y1="100" x2="100" y2="30" transform="rotate(225 100 100)"/>
+              <circle cx="100" cy="100" r="4" fill="#0A0F14" stroke="var(--teal)" stroke-width="2"/>
+            </svg>
+            <div class="ring-center">
+              <div class="big" data-role="bar">—</div>
+              <div class="unit">BAR</div>
+              <div class="sub" data-role="psi">— PSI</div>
+            </div>
+          </div>
+          <div class="gauge-label">Rear</div>
+        </div>
+      </div>
+
+      <div class="info-strip">
+        <div class="info-box"><div class="k">System Weight</div><div class="v" id="infoSystemWeight">—</div></div>
+        <div class="info-box"><div class="k">Tire Width</div><div class="v" id="infoWidth">—</div></div>
+        <div class="info-box"><div class="k">Surface</div><div class="v" id="infoSurface">—</div></div>
+      </div>
+
+      <div class="footnote">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+        <span>Estimates are based on system weight, tire width, tire type &amp; surface coefficient. Rear typically carries ~5% more load than front. Always respect your tire and rim's printed min/max range, and fine-tune ±5% for feel.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const DISCIPLINES = {
+    road: {
+      curve: [[18,110],[20,105],[23,100],[25,92],[28,82],[30,76],[32,70]],
+      widthMin:18, widthMax:32, widthDefault:28,
+      presets:[23,25,28,30,32],
+      gaugeMin:40, gaugeMax:130,
+      clampMin:60, clampMax:120,
+      frontFactor:0.95, bikeWeight:8,
+      surfaceLabel:"Road / Surface Quality"
+    },
+    gravel: {
+      curve: [[32,48],[35,44],[38,40],[40,37],[42,35],[45,32],[50,28]],
+      widthMin:32, widthMax:50, widthDefault:40,
+      presets:[35,38,40,42,45],
+      gaugeMin:15, gaugeMax:60,
+      clampMin:22, clampMax:55,
+      frontFactor:0.93, bikeWeight:10
+    },
+    mtb: {
+      curve: [[45,30],[50,27],[54,25],[58,23],[61,21],[66,19],[70,17]],
+      widthMin:45, widthMax:70, widthDefault:58,
+      presets:[50,54,58,61,66],
+      gaugeMin:10, gaugeMax:40,
+      clampMin:14, clampMax:35,
+      frontFactor:0.90, bikeWeight:13
+    },
+    cyclocross: {
+      curve: [[28,42],[30,38],[33,34],[35,31],[38,28],[40,25]],
+      widthMin:28, widthMax:40, widthDefault:33,
+      presets:[30,33,35,38],
+      gaugeMin:15, gaugeMax:50,
+      clampMin:20, clampMax:45,
+      frontFactor:0.93, bikeWeight:9
+    },
+    triathlon: {
+      curve: [[18,116],[20,111],[23,106],[25,98],[27,90],[28,86]],
+      widthMin:18, widthMax:28, widthDefault:25,
+      presets:[21,23,25,27],
+      gaugeMin:40, gaugeMax:130,
+      clampMin:65, clampMax:125,
+      frontFactor:0.97, bikeWeight:8
+    }
+  };
+
+  const SURFACES = [
+    { key:"smooth", label:"Smooth tarmac", desc:"Fresh, pristine asphalt", mult:1.08 },
+    { key:"average", label:"Average road", desc:"Typical paved road", mult:1.00 },
+    { key:"rough", label:"Rough / broken", desc:"Cracked, patched asphalt", mult:0.90 },
+    { key:"veryRough", label:"Very rough / off-road", desc:"Loose, chunky, technical", mult:0.80 }
+  ];
+
+  const TIRE_TYPES = {
+    clincher: { floorMult:1.00, helper:"Inner tube — pinch-flat risk limits how low you can go." },
+    tubeless: { floorMult:0.88, helper:"No tube — run lower pressure safely with reduced pinch-flat risk." },
+    tubular:  { floorMult:0.78, helper:"Glued tubular — supports the lowest pressures for maximum grip and comfort." }
+  };
+
+  const SYSTEM_WEIGHT_REF = 83; // 75kg rider + 8kg bike baseline used to calibrate the curves
+
+  let state = {
+    weight: 75,
+    width: 28,
+    discipline: "road",
+    surface: "smooth",
+    tireType: "clincher",
+    bikeWeightMode: "auto",
+    bikeWeightManual: null
+  };
+
+  function interpolate(curve, w){
+    if (w <= curve[0][0]) return curve[0][1];
+    if (w >= curve[curve.length-1][0]) return curve[curve.length-1][1];
+    for (let i=0; i<curve.length-1; i++){
+      const [w1,p1] = curve[i], [w2,p2] = curve[i+1];
+      if (w >= w1 && w <= w2){
+        const t = (w - w1) / (w2 - w1);
+        return p1 + t * (p2 - p1);
+      }
+    }
+    return curve[curve.length-1][1];
+  }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+  function psiToBar(psi){ return psi * 0.0689476; }
+
+  const R = 82, CIRC = 2*Math.PI*R, ARC_LEN = CIRC*0.75;
+
+  function updateRing(arcEl, needleEl, value, min, max){
+    const frac = clamp((value - min) / (max - min), 0, 1);
+    arcEl.setAttribute('stroke-dasharray', `${frac*ARC_LEN} ${CIRC}`);
+    needleEl.setAttribute('transform', `rotate(${225 + frac*270} 100 100)`);
+  }
+
+  function getBikeWeight(){
+    const d = DISCIPLINES[state.discipline];
+    if (state.bikeWeightMode === "manual" && state.bikeWeightManual != null) return state.bikeWeightManual;
+    return d.bikeWeight;
+  }
+
+  function compute(){
+    const d = DISCIPLINES[state.discipline];
+    const surf = SURFACES.find(s => s.key === state.surface);
+    const tire = TIRE_TYPES[state.tireType];
+
+    const bikeWeight = getBikeWeight();
+    const systemWeight = state.weight + bikeWeight;
+
+    const basePsi = interpolate(d.curve, state.width);
+    const weightFactor = Math.pow(systemWeight / SYSTEM_WEIGHT_REF, 0.85);
+
+    const clampMinAdj = d.clampMin * tire.floorMult;
+
+    let rear = basePsi * weightFactor * surf.mult;
+    rear = clamp(rear, clampMinAdj, d.clampMax);
+    let front = clamp(rear * d.frontFactor, clampMinAdj, d.clampMax);
+
+    rear = Math.round(rear);
+    front = Math.round(front);
+
+    updateRing(document.getElementById('arcFront'), document.getElementById('needleFront'), front, d.gaugeMin, d.gaugeMax);
+    updateRing(document.getElementById('arcRear'), document.getElementById('needleRear'), rear, d.gaugeMin, d.gaugeMax);
+
+    const frontBlock = document.getElementById('arcFront').closest('.gauge-block');
+    const rearBlock = document.getElementById('arcRear').closest('.gauge-block');
+    frontBlock.querySelector('[data-role="bar"]').textContent = psiToBar(front).toFixed(1);
+    frontBlock.querySelector('[data-role="psi"]').textContent = `${front} PSI`;
+    rearBlock.querySelector('[data-role="bar"]').textContent = psiToBar(rear).toFixed(1);
+    rearBlock.querySelector('[data-role="psi"]').textContent = `${rear} PSI`;
+
+    document.getElementById('infoSystemWeight').textContent = `${systemWeight} kg`;
+    document.getElementById('infoWidth').textContent = `${state.width} mm`;
+    document.getElementById('infoSurface').textContent = surf.label;
+
+    document.getElementById('tireTypeHelper').textContent = tire.helper;
+    renderBikeWeightPill();
+  }
+
+  function renderChips(){
+    const d = DISCIPLINES[state.discipline];
+    const box = document.getElementById('widthChips');
+    box.innerHTML = "";
+    d.presets.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.textContent = p + 'mm';
+      btn.addEventListener('click', () => {
+        state.width = p;
+        document.getElementById('widthInput').value = p;
+        refreshChipActive();
+        compute();
+      });
+      box.appendChild(btn);
+    });
+    refreshChipActive();
+  }
+  function refreshChipActive(){
+    document.querySelectorAll('.chip').forEach(c => {
+      c.classList.toggle('active', parseInt(c.textContent) === state.width);
+    });
+  }
+
+  function renderSurfaceList(){
+    const list = document.getElementById('surfaceList');
+    list.innerHTML = "";
+    SURFACES.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'surface-row' + (s.key === state.surface ? ' active' : '');
+      row.tabIndex = 0;
+      row.innerHTML = `<div><div class="t">${s.label}</div><div class="d">${s.desc}</div></div><div class="chev">&#8250;</div>`;
+      row.addEventListener('click', () => {
+        state.surface = s.key;
+        renderSurfaceList();
+        compute();
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function renderBikeWeightPill(){
+    const pill = document.getElementById('bikeWeightPill');
+    if (state.bikeWeightMode === 'auto'){
+      pill.classList.remove('manual');
+      pill.textContent = `Auto (${DISCIPLINES[state.discipline].bikeWeight}kg)`;
+    } else {
+      pill.classList.add('manual');
+      pill.textContent = `Manual (${state.bikeWeightManual}kg)`;
+    }
+  }
+
+  document.getElementById('bikeWeightPill').addEventListener('click', function(){
+    if (state.bikeWeightMode === 'auto'){
+      const current = DISCIPLINES[state.discipline].bikeWeight;
+      this.innerHTML = '';
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.value = current;
+      input.min = 4; input.max = 25;
+      this.appendChild(input);
+      input.focus();
+      input.select();
+      input.addEventListener('click', e => e.stopPropagation());
+      input.addEventListener('blur', () => {
+        const v = clamp(parseInt(input.value) || current, 4, 25);
+        state.bikeWeightManual = v;
+        state.bikeWeightMode = 'manual';
+        compute();
+      });
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+    } else {
+      state.bikeWeightMode = 'auto';
+      state.bikeWeightManual = null;
+      compute();
+    }
+  });
+
+  document.getElementById('disciplineGrid').querySelectorAll('.disc-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#disciplineGrid .disc-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.discipline = btn.dataset.key;
+      state.bikeWeightMode = 'auto';
+      state.bikeWeightManual = null;
+      const d = DISCIPLINES[state.discipline];
+      const widthInput = document.getElementById('widthInput');
+      widthInput.min = d.widthMin; widthInput.max = d.widthMax;
+      state.width = d.widthDefault;
+      widthInput.value = d.widthDefault;
+      renderChips();
+      compute();
+    });
+  });
+
+  document.getElementById('tireTypeSeg').querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tireTypeSeg button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.tireType = btn.dataset.key;
+      compute();
+    });
+  });
+
+  const weightSlider = document.getElementById('weightSlider');
+  weightSlider.addEventListener('input', () => {
+    state.weight = parseInt(weightSlider.value);
+    document.getElementById('weightValue').textContent = `${state.weight} kg`;
+    compute();
+  });
+
+  const widthInput = document.getElementById('widthInput');
+  widthInput.addEventListener('input', () => {
+    const d = DISCIPLINES[state.discipline];
+    let v = parseInt(widthInput.value);
+    if (isNaN(v)) return;
+    v = clamp(v, d.widthMin, d.widthMax);
+    state.width = v;
+    refreshChipActive();
+    compute();
+  });
+
+  function init(){
+    document.querySelector('#disciplineGrid .disc-btn[data-key="road"]').classList.add('active');
+    document.querySelector('#tireTypeSeg button[data-key="clincher"]').classList.add('active');
+    const d = DISCIPLINES.road;
+    widthInput.min = d.widthMin; widthInput.max = d.widthMax;
+    renderChips();
+    renderSurfaceList();
+    compute();
+  }
+  init();
+</script>
+</body>
+</html>
